@@ -8,9 +8,10 @@ from flask import Flask, render_template_string, request, flash, redirect, url_f
 from flask_mongoengine import MongoEngine
 from flask_user import login_required, UserManager, UserMixin, current_user
 from apscheduler.schedulers.background import BackgroundScheduler
+from snarkscript import snarkscript
 # change func print_date_time to custom func with isekai library TODO
 scheduler = BackgroundScheduler()
-scheduler.add_job(func=print_date_time, trigger="interval", seconds=3)
+scheduler.add_job(func=snarkscript, trigger="interval", seconds=10)
 scheduler.start()
 
 
