@@ -59,10 +59,10 @@ def addBackupData():
      client = pymongo.MongoClient('mongodb://localhost:27017/')
      with client:
         db = client.tst_app
-        db.user.find().forEach(bson.Code( '''
-            function(nameus) {
-                db.userBackup.insert_one(nameus)
-            }'''))
+        # db.user.find().forEach(bson.Code( '''
+        #     function(nameus) {
+        #         db.userBackup.insert_one(nameus)
+        #     }'''))
 
         # db.userBackup.insert_many(db.user.find()
         # print("------------------------")

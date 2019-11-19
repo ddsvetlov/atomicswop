@@ -67,6 +67,8 @@ def create_app():
 
         # Relationships
         roles = db.ListField(db.StringField(), default=[])
+    class MultiOffer(db.Document):
+        MOffer = db.ListField(db.StringField())
 
     class ExchangeOffer(db.Document):
         value1 = db.IntField(default= 0)
@@ -80,6 +82,9 @@ def create_app():
     # ExchangeOffer2 = ExchangeOffer(value1 = 3, value2 = 4, namecash1= 'cash3', namecash2= 'cash4')
     # ExchangeOffer2.save()
 
+
+    class MultiTransaction(db.Document):
+        MTrans = db.ListField(db.StringField())
 
     class Transaction(db.Document):
 
@@ -145,14 +150,25 @@ def create_app():
     @app.route('/offer', methods=["POST"])
     @login_required    # User must be authenticated
     def offer_page():
-        ExchangeOffer1 =ExchangeOffer(fromUserID = request.form.get('fromuser'),
-                                      value1 = request.form.get("value1"),
-                                      value2 = request.form.get('value2'),
-                                      namecash1 = request.form.get('namecash1'),
-                                      namecash2= request.form.get('namecash2'))
-        ExchangeOffer1.save()                              
-        return redirect("/members") 
-        
+        value1 = request.form.get("value1")
+        value2 = request.form.get('value2')
+        namecash1 = request.form.get('namecash1')
+        namecash2= request.form.get('namecash2')
+        print(value1, value2, namecash1,namecash2)
+
+        # ExchangeOffer1 =ExchangeOffer(value1 = request.form.get("value1"),
+        #                               value2 = request.form.get('value2'),
+        #                               namecash1 = request.form.get('namecash1'),
+        #                               namecash2= request.form.get('namecash2'))
+        # ExchangeOffer1.save()                              
+        # return redirect("/members") 
+        return render_template_string ("""
+            {% block content %}
+            <area> fuck fuck </area>
+            <area> {{value1}} {{value2}} {{namecash1}} {{namecash2}}  {{value3}}</area>
+            {% endblock %}
+            """, value1= value1, value2 = value2, namecash1= namecash1, namecash2=namecash2, value3 = request.form.get('value3'))
+            
         
 
         
@@ -170,6 +186,7 @@ def create_app():
         return render_template_string("""
             {% extends "flask_user_layout.html" %}
             {% block content %}
+                
                 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.js"></script>
                 <h2>Members page</h2>
 
@@ -179,31 +196,83 @@ def create_app():
                 <h1>Your cash is:</h1>
                 <area>cash1={{  cash1}}<br /> cash2={{cash2}}<br /> cash3={{cash3}}<br /> cash4={{cash4}}</area>
                 <h1>Offer your exchange:</h1>
-
-                <form action="/offer" method="POST" class newTransaction>
-                    <input type="hidden" value="{{ current_user.id }}" name="fromuser">
-                                     
-                    <area>Your money  </area>
+                <button onclick = "hello()"> +++ </button>
+                <form action="/offer" method="POST" class = "newTransaction">
+                <div id = "1">
+                  
+                    <area> From User Id </area>                 
+                    <input type="text" name="fromUserId">  
+                    <area> Value </area>       
                     <input type="text" name="value1">
                     <select id="3" name="namecash1">
                         <option>cash1</option>
                         <option>cash2</option>
                         <option>cash3</option>
                         <option>cash4</option>
-                    </select><br/ > 
-                    <area>User's money</area>
-                    <input type="text" name="value2">
-                    <select id="4" name=namecash2 >
+                    </select> 
+                    <area> To User Id </area> 
+                    <input type="text" name="toUserId">
+                    <area> From User Id </area> 
+                    <input type="text" name="value1">
+                    <select id="4" name="namecash1}" >
                         <option>cash1</option>
                         <option>cash2</option>
                         <option>cash3</option>
                         <option>cash4</option>
-                    </select><br/ >  
-                    <button type="submit">add this shit</button><br/ >
+                    </select>
+                    
+                    <br/ >  
+                </div>
+                <button type="submit">add this shit</button><br/>
                 </form>
 
-            
 
+
+                <script>
+                    const ValueId = createId();
+                    const NamecashId = createId();
+                        function createId(){
+                            var val =1;
+                            return function() {
+                                return ++val;
+                            }
+                        }
+                        function tmp () { 
+                            return `
+                                
+                                <area> From User Id </area>                 
+                                <input type="text" name="fromUserId">  
+                                <area> Value </area>       
+                                <input type="text" name="value${ValueId()}">
+                                <select id="3" name="namecash${NamecashId()}">
+                                    <option>cash1</option>
+                                    <option>cash2</option>
+                                    <option>cash3</option>
+                                    <option>cash4</option>
+                                </select> 
+                                <area> To User Id </area> 
+                                <input type="text" name="toUserId">
+                                <area> From User Id </area> 
+                                <input type="text" name="value${ValueId()}">
+                                <select id="4" name="namecash${NamecashId()}" >
+                                    <option>cash1</option>
+                                    <option>cash2</option>
+                                    <option>cash3</option>
+                                    <option>cash4</option>
+                                </select>
+                                
+                                
+                                <br/>`;
+                                }
+
+                function hello () {
+                   document.getElementById("1").innerHTML += tmp()
+                }
+                
+                </script>            
+
+
+              
                 <h1>You can make those change:</h1>
                 {%for item in offers%}
                 <form action="/transaction" method="POST">
