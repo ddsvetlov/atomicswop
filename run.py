@@ -10,9 +10,9 @@ from flask_user import login_required, UserManager, UserMixin, current_user
 from apscheduler.schedulers.background import BackgroundScheduler
 from snarkscript import snarkscript
 # change func print_date_time to custom func with isekai library TODO
-scheduler = BackgroundScheduler()
-scheduler.add_job(func=snarkscript, trigger="interval", seconds=10)
-scheduler.start()
+# scheduler = BackgroundScheduler()
+# scheduler.add_job(func=snarkscript, trigger="interval", seconds=10)
+# scheduler.start()
 
 
 
@@ -67,15 +67,18 @@ def create_app():
 
         # Relationships
         roles = db.ListField(db.StringField(), default=[])
-    class MultiOffer(db.Document):
-        MOffer = db.ListField(db.StringField())
+    class MultiOffer(db.EmbeddedDocument):
+        MOffer = db.ListField(db.EmbeddedDocumentField(ExchangeOffer))
+        def addvalue(self, offer: ExchangeOffer):
+            self.MOffer.append(offer)
 
-    class ExchangeOffer(db.Document):
+    class ExchangeOffer(db.EmbeddedDocument):
         value1 = db.IntField(default= 0)
         value2 = db.IntField(default= 0)
         namecash1 = db.StringField(default= '')
         namecash2 = db.StringField(default= '')
         fromUserID = db.StringField(default= '')
+        toUserID = db.StringField(default= '')
         
     # ExchangeOffer1 = ExchangeOffer(value1 = 1, value2 = 2, namecash1= 'cash1', namecash2= 'cash2')
     # ExchangeOffer1.save()
@@ -84,7 +87,7 @@ def create_app():
 
 
     class MultiTransaction(db.Document):
-        MTrans = db.ListField(db.StringField())
+        MTrans = db.ListField(db.StringField(default=''))
 
     class Transaction(db.Document):
 
@@ -150,11 +153,55 @@ def create_app():
     @app.route('/offer', methods=["POST"])
     @login_required    # User must be authenticated
     def offer_page():
-        value1 = request.form.get("value1")
-        value2 = request.form.get('value2')
-        namecash1 = request.form.get('namecash1')
-        namecash2= request.form.get('namecash2')
-        print(value1, value2, namecash1,namecash2)
+        values = []
+        namecashes = []
+        fromusers =[]
+        tousers = []
+        i=0
+        j=1
+        value = 'value'+ str(i)
+        namecash = 'namecash' + str(i)
+        fromuser = 'fromUserId' + str(j)
+        touser = 'toUserId' + str(j)
+
+        while (request.form.get(value) != None and request.form.get(namecash) != None):
+            values.append(request.form.get(value))
+            namecashes.append(request.form.get(namecash))
+            i+=1
+            print(i)
+            value = 'value'+ str(i)
+            namecash = 'namecash'+str(i)
+
+        while (request.form.get(fromuser) != None and request.form.get(touser) != None):
+            fromusers.append(request.form.get(fromuser))
+            tousers.append(request.form.get(touser))
+            j+=1
+            print(j)
+            fromuser = 'fromUserId' + str(j)
+            touser = 'toUserId' + str(j)
+
+
+        print(list(values))
+        print(list(namecashes))
+        print(list(fromusers))
+        print(list(tousers))
+
+        MultiTransaction1 = MultiTransaction
+        for item in range(len(fromusers)):
+            ExchangeOffer1 = ExchangeOffer( value1 = values[item*2 ],
+                                            value2 = values[item*2+1],
+                                            namecash1 = namecashes[item*2],
+                                            namecash2 = namecashes[item*2+1],
+                                            fromUserID = fromusers[item],
+                                            toUserID = tousers[item])
+            ExchangeOffer1.save()
+            str1 = values[item*2 ] + "," + values[item*2+1] + "," + namecashes[item*2] + "," + namecashes[item*2+1] + "," + fromusers[item] + "," + tousers[item]
+            MultiTransaction1.addvalue(ExchangeOffer1)
+
+            print('blablabla', item)
+        
+
+
 
         # ExchangeOffer1 =ExchangeOffer(value1 = request.form.get("value1"),
         #                               value2 = request.form.get('value2'),
@@ -164,10 +211,14 @@ def create_app():
         # return redirect("/members") 
         return render_template_string ("""
             {% block content %}
-            <area> fuck fuck </area>
-            <area> {{value1}} {{value2}} {{namecash1}} {{namecash2}}  {{value3}}</area>
+            <area> offer </area><br/>
+            <area> {{fromUserId1}} {{toUserId1}} {{value0}} {{value1}} {{namecash0}} {{namecash1}} </area><br/>
+            <area> {{fromUserId2}} {{toUserId2}} {{value2}} {{value3}} {{namecash2}} {{namecash3}} </area><br/>
+            <area> {{fromUserId3}} {{toUserId3}} {{value4}} {{value5}} {{namecash4}} {{namecash5}} </area><br/>
+           
             {% endblock %}
-            """, value1= value1, value2 = value2, namecash1= namecash1, namecash2=namecash2, value3 = request.form.get('value3'))
+            """, fromUserId1 = request.form.get('fromUserId1'), toUserId1 = request.form.get('toUserId1'),
+             value0 = request.form.get('value0'), value1 = request.form.get('value1'), value2 = request.form.get('value2'), namecash1 = request.form.get('namecash1'), namecash2= request.form.get('namecash2'), fromUserId2 = request.form.get('fromUserId2'), toUserId2 = request.form.get('toUserId2'), value3 = request.form.get('value3'), value4 = request.form.get('value4'), namecash3 = request.form.get('namecash3'), namecash4= request.form.get('namecash4'), fromUserId3 = request.form.get('fromUserId3'), toUserId3 = request.form.get('toUserId3'), value5 = request.form.get('value5'), value6 = request.form.get('value6'), namecash5 = request.form.get('namecash5'), namecash0 = request.form.get('namecash0'),namecash6= request.form.get('namecash6'))
             
         
 
@@ -201,20 +252,20 @@ def create_app():
                 <div id = "1">
                   
                     <area> From User Id </area>                 
-                    <input type="text" name="fromUserId">  
+                    <input type="text" name="fromUserId1">  
                     <area> Value </area>       
-                    <input type="text" name="value1">
-                    <select id="3" name="namecash1">
+                    <input type="text" name="value0">
+                    <select id="3" name="namecash0">
                         <option>cash1</option>
                         <option>cash2</option>
                         <option>cash3</option>
                         <option>cash4</option>
                     </select> 
                     <area> To User Id </area> 
-                    <input type="text" name="toUserId">
+                    <input type="text" name="toUserId1">
                     <area> From User Id </area> 
                     <input type="text" name="value1">
-                    <select id="4" name="namecash1}" >
+                    <select id="4" name="namecash1" >
                         <option>cash1</option>
                         <option>cash2</option>
                         <option>cash3</option>
@@ -231,6 +282,8 @@ def create_app():
                 <script>
                     const ValueId = createId();
                     const NamecashId = createId();
+                    const FromUserId = createId();
+                    const ToUserId = createId();
                         function createId(){
                             var val =1;
                             return function() {
@@ -241,7 +294,7 @@ def create_app():
                             return `
                                 
                                 <area> From User Id </area>                 
-                                <input type="text" name="fromUserId">  
+                                <input type="text" name="fromUserId${FromUserId()}">  
                                 <area> Value </area>       
                                 <input type="text" name="value${ValueId()}">
                                 <select id="3" name="namecash${NamecashId()}">
@@ -251,7 +304,7 @@ def create_app():
                                     <option>cash4</option>
                                 </select> 
                                 <area> To User Id </area> 
-                                <input type="text" name="toUserId">
+                                <input type="text" name="toUserId${ToUserId()}">
                                 <area> From User Id </area> 
                                 <input type="text" name="value${ValueId()}">
                                 <select id="4" name="namecash${NamecashId()}" >
