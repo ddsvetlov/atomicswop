@@ -1,0 +1,116 @@
+{% extends "flask_user_layout.html" %}
+            {% block content %}
+                
+                <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.js"></script>
+                <h2>Members page</h2>
+
+                {% for flash_message in get_flashed_messages() %}
+                    <h1>{{flash_message}}</h1>
+                {% endfor %}
+                <h1>Your cash is:</h1>
+                <area>cash1={{  cash1}}<br /> cash2={{cash2}}<br /> cash3={{cash3}}<br /> cash4={{cash4}}</area>
+                <h1>Offer your exchange:</h1>
+                <button onclick = "hello()"> +++ </button>
+                <form action="/offer" method="POST" class = "newTransaction">
+                <div id = "1">
+                  
+                    <area> From User Id </area>                 
+                    <input type="text" name="fromUserId1">  
+                    <area> Value </area>       
+                    <input type="text" name="value0">
+                    <select id="3" name="namecash0">
+                        <option>cash1</option>
+                        <option>cash2</option>
+                        <option>cash3</option>
+                        <option>cash4</option>
+                    </select> 
+                    <area> To User Id </area> 
+                    <input type="text" name="toUserId1">
+                    <area> Value </area> 
+                    <input type="text" name="value1">
+                    <select id="4" name="namecash1" >
+                        <option>cash1</option>
+                        <option>cash2</option>
+                        <option>cash3</option>
+                        <option>cash4</option>
+                    </select>
+                    
+                    <br/>  
+                </div>
+                <button type="submit">add this shit</button><br/>
+                </form>
+
+
+
+                <script>
+                    const ValueId = createId();
+                    const NamecashId = createId();
+                    const FromUserId = createId();
+                    const ToUserId = createId();
+                        function createId(){
+                            var val =1;
+                            return function() {
+                                return ++val;
+                            }
+                        }
+                        function tmp () { 
+                            return `
+                                
+                                <area> From User Id </area>                 
+                                <input type="text" name="fromUserId${FromUserId()}">  
+                                <area> Value </area>       
+                                <input type="text" name="value${ValueId()}">
+                                <select id="3" name="namecash${NamecashId()}">
+                                    <option>cash1</option>
+                                    <option>cash2</option>
+                                    <option>cash3</option>
+                                    <option>cash4</option>
+                                </select> 
+                                <area> To User Id </area> 
+                                <input type="text" name="toUserId${ToUserId()}">
+                                <area> Value </area> 
+                                <input type="text" name="value${ValueId()}">
+                                <select id="4" name="namecash${NamecashId()}" >
+                                    <option>cash1</option>
+                                    <option>cash2</option>
+                                    <option>cash3</option>
+                                    <option>cash4</option>
+                                </select>
+                                
+                                
+                                <br/>`;
+                                }
+
+                function hello () {
+                   document.getElementById("1").innerHTML += tmp()
+                }
+                
+                </script>            
+
+
+              
+                <h1>You can make those change:</h1>
+                {%set count = [0]%}
+                {%for item in OFFER%}
+                    <form action="/transaction" method="POST">
+                        {%for i in range(0, item | length, 6)%} 
+                            <span>exchange: {{ item[i] }} {{ item[i+2] }} fromUser:{{item[i+4] }} to: {{ item[i+1] }} {{ item[i+3] }} toUser:{{ item[i+5] }} </span><br/> 
+                            
+                        {% endfor %}
+                        <span> offer_id{{offer_id[count[0]]}}</span><br/>
+                        <input type="hidden" value ="{{offer_id[count[0]]}}" name = "offer_id">
+                        {% if count.append(count.pop()+1)%}{%endif%}
+                        
+                        <input type="hidden" value="{{current_user.id}}" name="user_id">
+                        
+                        <button type="submit">fuck this shit</button><br/>
+                    </form>
+                {% endfor %}   
+
+                <h1>Transaction on stack:</h1>
+                {%for item in transaction%}
+                    <span> fromUser_ID  {{ item.fromUser_ID }} toUser_ID  {{ item.toUser_ID }} value {{ item.value }} namecash {{ item.nameCash }}</span><br />
+                {% endfor %}    
+
+                <p><a href={{ url_for('user.logout') }}>Sign out</a></p>
+            {% endblock %}
