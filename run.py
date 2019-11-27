@@ -11,9 +11,9 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from snarkscript import snarkscript
 import json
 # change func print_date_time to custom func with isekai library TODO
-# scheduler = BackgroundScheduler()
-# scheduler.add_job(func=snarkscript, trigger="interval", seconds=10)
-# scheduler.start()
+scheduler = BackgroundScheduler()
+scheduler.add_job(func=snarkscript, trigger="interval", seconds=10)
+scheduler.start()
 
 
 
@@ -87,12 +87,11 @@ def create_app():
     class MultiTransaction(db.Document):
         MTrans = db.ListField(db.StringField(default=''))
 
-    class Transaction(db.Document):
-
-        fromUser_ID = db.StringField(default= '')
-        toUser_ID = db.StringField(default='')
-        value = db.IntField(default= 0)
-        nameCash = db.StringField(default= '')
+    # class Transaction(db.Document):
+    #     fromUser_ID = db.StringField(default= '')
+    #     toUser_ID = db.StringField(default='')
+    #     value = db.IntField(default= 0)
+    #     nameCash = db.StringField(default= '')
 
     class OfferStatus(db.Document):
         Status = db.ListField(db.StringField(), default=list)
@@ -124,20 +123,39 @@ def create_app():
         for stat in status:
             # find current offer
             if stat.offerId == offer_id:
+                print(offer_id)
                 print(stat.UserID)
-                # for elem in stat.UserID:
-                #     # chech that current user exist on this offer
-                #     if elem == user_id[elem]:
-                #         print(elem)
-                #         # stat.Status[elem] = "yes"
-                
+                i=0
+                # find and change status
+                for elem in stat.UserID:
+                    if elem == user_id:
+                   
+                        old_status = list(OfferStatus.objects(offerId=offer_id).get().Status)
+                        old_status[i]='yes'
+                        OfferStatus.objects(offerId=offer_id).update_one(set__Status=old_status)  
+                    i+=1           
+     
+        # find accept all status order            
+        old_status = list(OfferStatus.objects(offerId=offer_id).get().Status)
+        for i in range(len(old_status)):
+            if old_status[i]=='yes':
+                if (i==len(old_status)-1 and old_status[i]=='yes'):
+                # create multitransaction
+                   moffer = MultiOffer.objects(pk=offer_id).get().MOffer
+                   print('fuckfuck')
+                   print(moffer)
+                   print('fuckfuck')
+                   multiTrans = MultiTransaction()
+                   multiTrans.MTrans = moffer
+                   multiTrans.save()
+                # delete MultiOffer
+                   MultiOffer.objects(pk=offer_id).delete()
+                #    delete OfferStatus
+                   OfferStatus.objects(offerId=offer_id).delete() 
+                      
+            else:
+                break
 
-        #         if str(elem) == str(current_user.id):
-        #             tut.append(offer.MOffer)
-        #             of_id.append(str(offer.id))
-        #             break
-        
-                                            
         return render_template('transaction.html', offer_id = offer_id, user_id = user_id)
         
 
@@ -212,9 +230,12 @@ def create_app():
     @app.route('/members')
     @login_required    # User must be authenticated
     def member_page():
+        offers=[]
         offers = ExchangeOffer.objects.all()
         # TODO view transaction only for current user
-        transaction = Transaction.objects.all()
+        # transaction = Transaction.objects.all()
+        mtransaction = []
+        mtransaction = MultiTransaction.objects.all()
         # TODO view offer only for current user
         tut =[]
         of_id =[]
@@ -225,14 +246,13 @@ def create_app():
                     tut.append(offer.MOffer)
                     of_id.append(str(offer.id))
                     break
-            
-        print(of_id)
-        print(tut)       
+           
+             
         return render_template("members.html", cash1=User.objects.get(pk = current_user.id).cash1,
                  cash2 = User.objects.get(pk = current_user.id).cash2,
                  cash3= User.objects.get(pk = current_user.id).cash3, 
                  cash4 = User.objects.get(pk = current_user.id).cash4,
-                 offers = offer, transaction = transaction, OFFER = tut, offer_id = of_id)
+                 OFFER = tut, offer_id = of_id, mtransaction=mtransaction)
 
 
     return app

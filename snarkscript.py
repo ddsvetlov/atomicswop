@@ -1,110 +1,112 @@
-def snarkscript():
+# def snarkscript():
 
-	import subprocess
-	import test_db_script
-	import time
-	from create_file import createInputDataFile
-	import os
-	import random
-	import json
+import subprocess
+import test_db_script
+import time
+from create_file import createInputDataFile
+import os
+import random
+import json
 
-	# data
-	transaction=True
-	# random number to verify that prove takes from user
-	randomKey = random.randint(0,100)
-	# print(randomKey)
-	# randomKey = 99
-	getKey = 0
-	# start timer for block of transactions
-	startTime= time.time();
-	# some start fun to work with db
-	# test_db_script.cleanUpForTesting()
-	test_db_script.addBackupData()
-	# quantity_transaction = test_db_script.getQuantityTransaction()
-	# start main loop foreach transactions in block
-	# for counter in range(quantity_transaction):
-	# 	print("Now is transaction number ", counter)
-	# 	# get data from db about counter's transaction
-	# 	dataOfTransaction = test_db_script.getData(counter)
-	# 	userFromID = dataOfTransaction[0]
-	# 	userToID = dataOfTransaction[1]
-	# 	quantityOfUsersFromCash = dataOfTransaction[2]
-	# 	quantityOfUsersToCash = dataOfTransaction[3]
-	# 	cashValue = dataOfTransaction[4]
-	# 	cashID = dataOfTransaction[5] 
+# data
+transaction=True
+# random number to verify that prove takes from user
+randomKey = random.randint(0,100)
+getKey = 0
+# start timer for block of transactions
+startTime= time.time();
 
-	# 	# create input's data file .c.in with input data and randomKey
-	# 	inputData = createInputDataFile(quantityOfUsersFromCash, quantityOfUsersToCash, randomKey, cashValue)
+# some start fun to work with db
+# this need
+# test_db_script.addBackupData()
+quantity_Multitransaction = test_db_script.getQuantityMultiTransaction()
+
+# start main loop foreach transactions in block
+for counter in range(quantity_Multitransaction):
+	print("Now is transaction number ", counter)
+	# get data from db about counter's transaction
+	dataOfMultiTransaction = test_db_script.getData(counter)
+	for i in range(0, len(dataOfMultiTransaction), 6):
+		userFromID = dataOfMultiTransaction[i]
+		userToID = dataOfMultiTransaction[i+1]
+		quantityOfUsersFromCash = dataOfMultiTransaction[i+2]
+		quantityOfUsersToCash = dataOfMultiTransaction[i+3]
+		cashValue = dataOfMultiTransaction[i+4]
+		cashID = dataOfMultiTransaction[i+5] 
+
+		# 	create input's data file .c.in with input data and randomKey
+		inputData = createInputDataFile(quantityOfUsersFromCash, quantityOfUsersToCash, randomKey, cashValue)
+		#  start isekai
+		output1 = subprocess.check_output(["./../isekai", "--scheme=dalek", "--r1cs=test.j1", "test.c"])
+		output  = subprocess.check_output(["./isekai", "--scheme=dalek", "--prove=testprove", "test.j1"])
+		output2 = subprocess.check_output(["./isekai", "--scheme=dalek", "--verif=testprove", "test.j1"])
+
+		# output, err = startProgram3.communicate()
+		output = output.decode('utf-8')
+		lines = output.split('\n')
+		print(lines)
+
+# 	proveCheck = "verification SUCCESS"
+# 	proveStatus = lines[len(lines)-4]
+# 	print("proveStatus is ", proveStatus)
+# 	if proveStatus==proveCheck:
 	
-	# 	output1 = subprocess.check_output(["./isekai", "--scheme=dalek", "--r1cs=test.j1", "test.c"])
-	# 	output  = subprocess.check_output(["./isekai", "--scheme=dalek", "--prove=testprove", "test.j1"])
-	# 	output2 = subprocess.check_output(["./isekai", "--scheme=dalek", "--verif=testprove", "test.j1"])
+# 		# get new cash value
+# 		file = open("test.j1.in","r")
+# 		stringOut = "outputs"
+# 		# here find output data
 
-	# 	# output, err = startProgram3.communicate()
-	# 	output = output.decode('utf-8')
-	# 	lines = output.split('\n')
 
-	# 	proveCheck = "verification SUCCESS"
-	# 	proveStatus = lines[len(lines)-4]
-	# 	print("proveStatus is ", proveStatus)
-	# 	if proveStatus==proveCheck:
+# 		for line in file:
+# 			start = line.find(stringOut)
+# 			if start== -1:
+# 				pass
+# 			else:
+# 				out = line[start:]
+# 				outputl1 = out.find("[") 
+# 				outputl2 = out.find("]")
+# 				array = out[outputl1+1:outputl2].split(",")
+# 				listr = list(out[outputl1+1:outputl2].split(","))
+# 				print("This is prove output data", listr	)
+# 				# check that output data is correct 
+# 				if (int(listr[0]) or int(listr[1])) >=0:
+# 					quantityOfUsersFromCash = listr[0]
+# 					quantityOfUsersToCash =listr[1]
+# 					getkey=0
+# 					getKey = listr[2]
+# 					print("NEW first  user cash is: ",quantityOfUsersFromCash)
+# 					print("NEW second user cash is: ",quantityOfUsersToCash)
+# 					print("this is a random key:    ",randomKey)
+# 					print("this is a get key:       ", getKey)
+
+
+
+# 				else:
+# 					transaction=False
+# 		file.close()
 		
-	# 		# get new cash value
-	# 		file = open("test.j1.in","r")
-	# 		stringOut = "outputs"
-	# 		# here find output data
+# 		# make update for db(this part actually work with stark)
+# 		# if prove success than update db
+	
+# 		if int(getKey)==randomKey:
+# 			print(getKey, " getKey is the same as randomKey", randomKey, "the proof takes from correct user")
+# 			test_db_script.updateDB(quantityOfUsersFromCash, quantityOfUsersToCash, userFromID, userToID, cashID)
+# 		else:
+# 			transaction=False	
+
+# 	else:
+# 		# if verif failed than back up db after block of trans
+# 		test_db_script.callBackup()
+# 		print("ERROR Can't make this block of transaction in step number", counter)
+# 		break
+# 	if (transaction==False):
+# 		test_db_script.callBackup()
+# 		print("ERROR Can't make this block of transaction ")
+# 		break
 
 
-	# 		for line in file:
-	# 			start = line.find(stringOut)
-	# 			if start== -1:
-	# 				pass
-	# 			else:
-	# 				out = line[start:]
-	# 				outputl1 = out.find("[") 
-	# 				outputl2 = out.find("]")
-	# 				array = out[outputl1+1:outputl2].split(",")
-	# 				listr = list(out[outputl1+1:outputl2].split(","))
-	# 				print("This is prove output data", listr	)
-	# 				# check that output data is correct 
-	# 				if (int(listr[0]) or int(listr[1])) >=0:
-	# 					quantityOfUsersFromCash = listr[0]
-	# 					quantityOfUsersToCash =listr[1]
-	# 					getkey=0
-	# 					getKey = listr[2]
-	# 					print("NEW first  user cash is: ",quantityOfUsersFromCash)
-	# 					print("NEW second user cash is: ",quantityOfUsersToCash)
-	# 					print("this is a random key:    ",randomKey)
-	# 					print("this is a get key:       ", getKey)
+# # after block of transaction delete backup and print db
+# test_db_script.deleteBackupData()
+# test_db_script.printDB()
 
-
-
-	# 				else:
-	# 					transaction=False
-	# 		file.close()
-			
-	# 		# make update for db(this part actually work with stark)
-	# 		# if prove success than update db
-		
-	# 		if int(getKey)==randomKey:
-	# 			print(getKey, " getKey is the same as randomKey", randomKey, "the proof takes from correct user")
-	# 			test_db_script.updateDB(quantityOfUsersFromCash, quantityOfUsersToCash, userFromID, userToID, cashID)
-	# 		else:
-	# 			transaction=False	
-
-	# 	else:
-	# 		# if verif failed than back up db after block of trans
-	# 		test_db_script.callBackup()
-	# 		print("ERROR Can't make this block of transaction in step number", counter)
-	# 		break
-	# 	if (transaction==False):
-	# 		test_db_script.callBackup()
-	# 		print("ERROR Can't make this block of transaction ")
-	# 		break
-
-
-	# # after block of transaction delete backup and print db
-	test_db_script.deleteBackupData()
-	# test_db_script.printDB()
-
-	# print("time", "--- %s seconds ---" % (time.time() - startTime))
+# print("time", "--- %s seconds ---" % (time.time() - startTime))

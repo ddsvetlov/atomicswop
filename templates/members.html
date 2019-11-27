@@ -108,9 +108,14 @@
                 {% endfor %}   
 
                 <h1>Transaction on stack:</h1>
-                {%for item in transaction%}
+                <!-- {%for item in transaction%}
                     <span> fromUser_ID  {{ item.fromUser_ID }} toUser_ID  {{ item.toUser_ID }} value {{ item.value }} namecash {{ item.nameCash }}</span><br />
-                {% endfor %}    
+                {% endfor %}     -->
+
+                {%for item in mtransaction%}
+                    <span>transaction id {{item.id}}</span><br/>         
+                {%endfor%}
+                
 
                 <p><a href={{ url_for('user.logout') }}>Sign out</a></p>
             {% endblock %}

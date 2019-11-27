@@ -3,6 +3,22 @@ import pandas as pd
 import pymongo
 import bson
 
+def getQuantityMultiTransaction():
+    
+    client = pymongo.MongoClient('mongodb://localhost:27017/')
+    with client:
+        db = client.tst_app
+        quantity = db.multi_transaction.find().count()
+    return (quantity)
+
+def addBackupData():
+     
+     client = pymongo.MongoClient('mongodb://localhost:27017/')
+     with client:
+        db =client.tst_app
+        for item in db.user.find():
+            db.userBackup.insert(item)
+
 def getData(i): 
     
     #connect to db
@@ -11,28 +27,48 @@ def getData(i):
     #make smth with db
     with client:
 
-        db = client.tstapp
-            
-        # quantity = db.transaction.find().count()
-        # for i in range(quantity):
-        transac = db.transaction.find_one({'transaction_ID': i+1})
-        fromID = transac["fromUser_ID"]
-        toID = transac["toUser_ID"]
-        value = transac["value"]
-        cashID = transac["nameCash"]
-        # print(fromID, toID, value, cashID)
-        us = db.user.find_one({'user_ID': fromID})
-        fromCash = us[cashID]
-        us = db.user.find_one({'user_ID': toID})
-        toCash = us[cashID]
-        # print(fromCash, "suck1")
-        # print(toCash, "suck2")
-        print("-----------------------------")
-        users_list = list(db.user.find())
-        df = pd.DataFrame(users_list)
-        print("getDATA")
-        print(df)
-    return(fromID, toID, fromCash, toCash, value, cashID)
+        db = client.tst_app
+        
+        value1 = []
+        value2= []
+        namecash1= []
+        namecash2= []
+        fromUser= []
+        toUser = []
+        fromCash = []
+        toCash = []   
+        transaction = [] 
+        
+        transac = db.multi_transaction.find_one()['MTrans']
+        for item in range(0,len(transac),6):
+            value1.append(transac[item])
+            value2.append(transac[item+1])
+            namecash1.append(transac[item+2])
+            namecash2.append(transac[item+3])
+            fromUser.append(transac[item+4])
+            toUser.append(transac[item+5])
+    
+            from bson.objectid import ObjectId
+            us = db.user.find_one( {'_id': ObjectId(fromUser[i]) })
+            fromCash.append(us[namecash1[i]])
+            us = db.user.find_one( {'_id': ObjectId(toUser[i]) })
+            toCash.append(us[namecash2[i]])
+
+            transaction.append(fromUser[i])
+            transaction.append(toUser[i])
+            transaction.append(fromCash[i])
+            transaction.append(toCash[i])
+            transaction.append(value1[i])
+            transaction.append(namecash1[i])
+
+            transaction.append(toUser[i])
+            transaction.append(fromUser[i])
+            transaction.append(toCash[i])
+            transaction.append(fromCash[i])
+            transaction.append(value2[i])
+            transaction.append(namecash2[i])
+         
+    return(transaction)
     
 def updateDB(fromCash, toCash, fromID, toID, cashID):
     
@@ -46,40 +82,10 @@ def updateDB(fromCash, toCash, fromID, toID, cashID):
     print(df)
     # pprint.pprint(list(db.user.find()))
 
-def getQuantityTransaction():
-    
-    client = pymongo.MongoClient('mongodb://localhost:27017/')
-    with client:
-        db = client.tst_app
-        quantity = db.transaction.find().count()
-    return (quantity)
 
-def addBackupData():
-     
-     client = pymongo.MongoClient('mongodb://localhost:27017/')
-     with client:
-        db = client.tst_app
-        # db.user.find().forEach(bson.Code( '''
-        #     function(nameus) {
-        #         db.userBackup.insert_one(nameus)
-        #     }'''))
 
-        # db.userBackup.insert_many(db.user.find()
-        # print("------------------------")
-        # users_list = list(db.user.find())
-        # df = pd.DataFrame(users_list)
-        # print("user")
-        # print(df)
-        # print("------------------------------")
-        # users_list = list(db.userBackup.find())
-        # df = pd.DataFrame(users_list)
-        # print("BackUpUsers")
-        # print(df)
-        # print("---------------------------")
-          
-    # with client:
-    #     db = client.tst_app
-    #     db.userBackup.insert_many(user)
+
+   
 
 def callBackup():
     
