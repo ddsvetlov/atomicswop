@@ -11,9 +11,9 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from snarkscript import snarkscript
 import json
 # change func print_date_time to custom func with isekai library TODO
-scheduler = BackgroundScheduler()
-scheduler.add_job(func=snarkscript, trigger="interval", seconds=10)
-scheduler.start()
+# scheduler = BackgroundScheduler()
+# scheduler.add_job(func=snarkscript, trigger="interval", seconds=10)
+# scheduler.start()
 
 
 
@@ -60,10 +60,10 @@ def create_app():
         # User information
         first_name = db.StringField(default='')
         last_name = db.StringField(default='')
-        cash1 = db.IntField(default= 1)
-        cash2 = db.IntField(default= 2)
-        cash3 = db.IntField(default= 3)
-        cash4 = db.IntField(default= 4)
+        cash1 = db.IntField(default= 100)
+        cash2 = db.IntField(default= 100)
+        cash3 = db.IntField(default= 100)
+        cash4 = db.IntField(default= 100)
 
 
         # Relationships
@@ -86,6 +86,9 @@ def create_app():
 
     class MultiTransaction(db.Document):
         MTrans = db.ListField(db.StringField(default=''))
+
+    class HistoryTransaction(db.Document):
+        HTrans = db.ListField(db.StringField(default=''))
 
     # class Transaction(db.Document):
     #     fromUser_ID = db.StringField(default= '')
@@ -141,18 +144,23 @@ def create_app():
             if old_status[i]=='yes':
                 if (i==len(old_status)-1 and old_status[i]=='yes'):
                 # create multitransaction
-                   moffer = MultiOffer.objects(pk=offer_id).get().MOffer
-                   print('fuckfuck')
-                   print(moffer)
-                   print('fuckfuck')
-                   multiTrans = MultiTransaction()
-                   multiTrans.MTrans = moffer
-                   multiTrans.save()
+                    moffer = MultiOffer.objects(pk=offer_id).get().MOffer
+                    multiTrans = MultiTransaction()
+                    multiTrans.MTrans = moffer
+                    multiTrans.save()
+                    id =multiTrans.id
                 # delete MultiOffer
-                   MultiOffer.objects(pk=offer_id).delete()
+                    MultiOffer.objects(pk=offer_id).delete()
                 #    delete OfferStatus
-                   OfferStatus.objects(offerId=offer_id).delete() 
-                      
+                    OfferStatus.objects(offerId=offer_id).delete() 
+                # run snark script
+                    snarkscript()
+                # move complete transaction to histrory
+                    histtran = HistoryTransaction()
+                    histtran.HTrans =  moffer
+                    histtran.save() 
+                # delete complete transaction
+                    MultiTransaction.objects(pk=id).delete()
             else:
                 break
 

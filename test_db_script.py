@@ -2,6 +2,7 @@ import pprint
 import pandas as pd
 import pymongo
 import bson
+from bson.objectid import ObjectId
 
 def getQuantityMultiTransaction():
     
@@ -9,7 +10,11 @@ def getQuantityMultiTransaction():
     with client:
         db = client.tst_app
         quantity = db.multi_transaction.find().count()
-    return (quantity)
+        transactionIds =[]
+        for t in db.multi_transaction.find():
+            transactionIds.append(t['_id'])
+       
+    return (quantity,transactionIds)
 
 def addBackupData():
      
@@ -17,9 +22,10 @@ def addBackupData():
      with client:
         db =client.tst_app
         for item in db.user.find():
+            
             db.userBackup.insert(item)
 
-def getData(i): 
+def getData(i,IDs): 
     
     #connect to db
     client = pymongo.MongoClient('mongodb://localhost:27017/')
@@ -39,18 +45,26 @@ def getData(i):
         toCash = []   
         transaction = [] 
         
-        transac = db.multi_transaction.find_one()['MTrans']
+        transac = db.multi_transaction.find_one({'_id': IDs })['MTrans']
         for item in range(0,len(transac),6):
+            print("catcatcatctactactac")
+            print(len(transac))
             value1.append(transac[item])
             value2.append(transac[item+1])
             namecash1.append(transac[item+2])
             namecash2.append(transac[item+3])
             fromUser.append(transac[item+4])
+            print('get data')
+            print('get data')
+            print(fromUser)
             toUser.append(transac[item+5])
     
-            from bson.objectid import ObjectId
+            
             us = db.user.find_one( {'_id': ObjectId(fromUser[i]) })
+            
+            print(us)
             fromCash.append(us[namecash1[i]])
+            print(fromCash)
             us = db.user.find_one( {'_id': ObjectId(toUser[i]) })
             toCash.append(us[namecash2[i]])
 
@@ -67,35 +81,29 @@ def getData(i):
             transaction.append(fromCash[i])
             transaction.append(value2[i])
             transaction.append(namecash2[i])
-         
+        print('balblalblalblalbla')
+        print(transac) 
     return(transaction)
     
 def updateDB(fromCash, toCash, fromID, toID, cashID):
-    
+    print('update data')
+    print(fromCash, toCash, fromID, toID, cashID)
     client = pymongo.MongoClient('mongodb://localhost:27017/')
     with client:
         db = client.tst_app
-        db.user.update_one({'user_ID': fromID}, {'$set': {cashID : fromCash}})
-        db.user.update_one({'user_ID': toID}, {'$set': {cashID : toCash}})
+        db.user.update_one({'_id': ObjectId(fromID)}, {'$set': {cashID : int(fromCash)}})
+        db.user.update_one({'_id': ObjectId(toID)}, {'$set': {cashID : int(toCash)}})
     users_list = list(db.user.find())
     df = pd.DataFrame(users_list)
     print(df)
     # pprint.pprint(list(db.user.find()))
 
-
-
-
-   
-
 def callBackup():
     
     client = pymongo.MongoClient('mongodb://localhost:27017/')
-     # client = pymongo.MongoClient('mongodb://localhost:27017/')
     with client:
         db = client.tst_app
         db.user.drop()
-        # print("fucksuckfuck")
-        # print(list(db.usersBackup.find()))
         db.user.insert_many(db.userBackup.find())
         db.userBackup.drop()
 
