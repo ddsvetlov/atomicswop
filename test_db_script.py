@@ -41,11 +41,11 @@ def getData(i,IDs):
         namecash2= []
         fromUser= []
         toUser = []
-        fromCash = []
-        toCash = []   
+        # fromCash = []
+        # toCash = []   
         transaction = [] 
-        fromCashBack = []
-        toCashBack = []
+        # fromCashBack = []
+        # toCashBack = []
         
         transac = db.multi_transaction.find_one({'_id': IDs })['MTrans']
         j= 0
@@ -57,32 +57,47 @@ def getData(i,IDs):
             fromUser.append(transac[item+4])
             toUser.append(transac[item+5])
             
-            us = db.user.find_one( {'_id': ObjectId(fromUser[j]) })
+            # us = db.user.find_one( {'_id': ObjectId(fromUser[j]) })
             
-            fromCash.append(us[namecash1[j]])
-            fromCashBack.append(us[namecash2[j]])
+            # fromCash.append(us[namecash1[j]])
+            # fromCashBack.append(us[namecash2[j]])
             
-            us = db.user.find_one( {'_id': ObjectId(toUser[j]) })
-            toCash.append(us[namecash1[j]])
-            toCashBack.append(us[namecash2[j]])
+            # us = db.user.find_one( {'_id': ObjectId(toUser[j]) })
+            # toCash.append(us[namecash1[j]])
+            # toCashBack.append(us[namecash2[j]])
         
             transaction.append(fromUser[j])
             transaction.append(toUser[j])
-            transaction.append(fromCash[j])
-            transaction.append(toCash[j])
+            # transaction.append(fromCash[j])
+            # transaction.append(toCash[j])
             transaction.append(value1[j])
             transaction.append(namecash1[j])
 
             transaction.append(toUser[j])
             transaction.append(fromUser[j])
-            transaction.append(toCashBack[j])
-            transaction.append(fromCashBack[j])
+            # transaction.append(toCashBack[j])
+            # transaction.append(fromCashBack[j])
             transaction.append(value2[j])
             transaction.append(namecash2[j])
             j+=1
          
     return(transaction)
+
+def getWallet(userFromID,cashId):
+    #connect to db
+    client = pymongo.MongoClient('mongodb://localhost:27017/')
+
+    #make smth with db
+    with client:
+
+        db = client.tst_app
+        us = db.user.find_one( {'_id': ObjectId(userFromID) })
     
+    return (us[cashId])
+
+
+
+
 def updateDB(fromCash, toCash, fromID, toID, cashID):
     print('update data')
     print(fromCash, toCash, fromID, toID, cashID)

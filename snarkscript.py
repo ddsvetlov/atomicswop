@@ -26,16 +26,18 @@ def snarkscript():
 	for counter in range(quantity_Multitransaction[0]):
 		if boole==True:
 			print("Now is transaction number ", counter)
-			# get data from db about counter's transaction
+			# get data from db about counter's transaction(withiut info about user's wallets)
 			dataOfMultiTransaction = test_db_script.getData(counter,quantity_Multitransaction[1][counter])
-			for i in range(0, len(dataOfMultiTransaction), 6):
+			for i in range(0, len(dataOfMultiTransaction), 4):
 				if boole == True:
 					userFromID = dataOfMultiTransaction[i]
 					userToID = dataOfMultiTransaction[i+1]
-					quantityOfUsersFromCash = dataOfMultiTransaction[i+2]
-					quantityOfUsersToCash = dataOfMultiTransaction[i+3]
-					cashValue = dataOfMultiTransaction[i+4]
-					cashID = dataOfMultiTransaction[i+5] 
+					cashValue = dataOfMultiTransaction[i+2]
+					cashID = dataOfMultiTransaction[i+3]
+					quantityOfUsersFromCash = test_db_script.getWallet(userFromID,cashID)
+					quantityOfUsersToCash = test_db_script.getWallet(userToID,cashID)
+					
+					 
 
 					# 	create input's data file .c.in with input data and randomKey
 					inputData = createInputDataFile(quantityOfUsersFromCash, quantityOfUsersToCash, randomKey, cashValue)
