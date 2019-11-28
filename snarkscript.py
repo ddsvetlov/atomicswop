@@ -47,7 +47,6 @@ def snarkscript():
 					# output, err = startProgram3.communicate()
 					output = output.decode('utf-8')
 					lines = output.split('\n')
-					print(lines)
 
 					proveCheck = "verification SUCCESS"
 					proveStatus = lines[len(lines)-4]
@@ -70,7 +69,7 @@ def snarkscript():
 								outputl2 = out.find("]")
 								array = out[outputl1+1:outputl2].split(",")
 								listr = list(out[outputl1+1:outputl2].split(","))
-								print("This is prove output data", listr	)
+								# print("This is prove output data", listr	)
 								# check that output data is correct 
 								if (int(listr[0]) or int(listr[1])) >=0:
 									quantityOfUsersFromCash = listr[0]
@@ -79,8 +78,8 @@ def snarkscript():
 									getKey = listr[2]
 									print("NEW first  user cash is: ",quantityOfUsersFromCash)
 									print("NEW second user cash is: ",quantityOfUsersToCash)
-									print("this is a random key:    ",randomKey)
-									print("this is a get key:       ", getKey)
+									# print("this is a random key:    ",randomKey)
+									# print("this is a get key:       ", getKey)
 								else:
 									transaction=False
 						file.close()
@@ -89,7 +88,7 @@ def snarkscript():
 						# if prove success than update db
 					
 						if int(getKey)==randomKey:
-							print(getKey, " getKey is the same as randomKey", randomKey, "the proof takes from correct user")
+							# print(getKey, " getKey is the same as randomKey", randomKey, "the proof takes from correct user")
 							test_db_script.updateDB(quantityOfUsersFromCash, quantityOfUsersToCash, userFromID, userToID, cashID)
 						else:
 							transaction=False	

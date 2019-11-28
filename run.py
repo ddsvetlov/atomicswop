@@ -126,8 +126,8 @@ def create_app():
         for stat in status:
             # find current offer
             if stat.offerId == offer_id:
-                print(offer_id)
-                print(stat.UserID)
+                # print(offer_id)
+                # print(stat.UserID)
                 i=0
                 # find and change status
                 for elem in stat.UserID:

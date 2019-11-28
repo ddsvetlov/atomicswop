@@ -44,45 +44,43 @@ def getData(i,IDs):
         fromCash = []
         toCash = []   
         transaction = [] 
+        fromCashBack = []
+        toCashBack = []
         
         transac = db.multi_transaction.find_one({'_id': IDs })['MTrans']
+        j= 0
         for item in range(0,len(transac),6):
-            print("catcatcatctactactac")
-            print(len(transac))
             value1.append(transac[item])
             value2.append(transac[item+1])
             namecash1.append(transac[item+2])
             namecash2.append(transac[item+3])
             fromUser.append(transac[item+4])
-            print('get data')
-            print('get data')
-            print(fromUser)
             toUser.append(transac[item+5])
-    
             
-            us = db.user.find_one( {'_id': ObjectId(fromUser[i]) })
+            us = db.user.find_one( {'_id': ObjectId(fromUser[j]) })
             
-            print(us)
-            fromCash.append(us[namecash1[i]])
-            print(fromCash)
-            us = db.user.find_one( {'_id': ObjectId(toUser[i]) })
-            toCash.append(us[namecash2[i]])
+            fromCash.append(us[namecash1[j]])
+            fromCashBack.append(us[namecash2[j]])
+            
+            us = db.user.find_one( {'_id': ObjectId(toUser[j]) })
+            toCash.append(us[namecash1[j]])
+            toCashBack.append(us[namecash2[j]])
+        
+            transaction.append(fromUser[j])
+            transaction.append(toUser[j])
+            transaction.append(fromCash[j])
+            transaction.append(toCash[j])
+            transaction.append(value1[j])
+            transaction.append(namecash1[j])
 
-            transaction.append(fromUser[i])
-            transaction.append(toUser[i])
-            transaction.append(fromCash[i])
-            transaction.append(toCash[i])
-            transaction.append(value1[i])
-            transaction.append(namecash1[i])
-
-            transaction.append(toUser[i])
-            transaction.append(fromUser[i])
-            transaction.append(toCash[i])
-            transaction.append(fromCash[i])
-            transaction.append(value2[i])
-            transaction.append(namecash2[i])
-        print('balblalblalblalbla')
-        print(transac) 
+            transaction.append(toUser[j])
+            transaction.append(fromUser[j])
+            transaction.append(toCashBack[j])
+            transaction.append(fromCashBack[j])
+            transaction.append(value2[j])
+            transaction.append(namecash2[j])
+            j+=1
+         
     return(transaction)
     
 def updateDB(fromCash, toCash, fromID, toID, cashID):
@@ -93,9 +91,9 @@ def updateDB(fromCash, toCash, fromID, toID, cashID):
         db = client.tst_app
         db.user.update_one({'_id': ObjectId(fromID)}, {'$set': {cashID : int(fromCash)}})
         db.user.update_one({'_id': ObjectId(toID)}, {'$set': {cashID : int(toCash)}})
-    users_list = list(db.user.find())
-    df = pd.DataFrame(users_list)
-    print(df)
+    # users_list = list(db.user.find())
+    # df = pd.DataFrame(users_list)
+    # print(df)
     # pprint.pprint(list(db.user.find()))
 
 def callBackup():
