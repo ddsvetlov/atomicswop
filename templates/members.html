@@ -37,7 +37,7 @@
                     
                     <br/>  
                 </div>
-                <button type="submit">add this shit</button><br/>
+                <button type="submit">add offer</button><br/>
                 </form>
 
 
@@ -103,7 +103,7 @@
                         
                         <input type="hidden" value="{{current_user.id}}" name="user_id">
                         
-                        <button type="submit">fuck this shit</button><br/>
+                        <button type="submit">confirm</button><br/>
                     </form>
                 {% endfor %}   
 
@@ -113,7 +113,8 @@
                 {% endfor %}     -->
 
                 {%for item in mtransaction%}
-                    <span>transaction id {{item.id}}</span><br/>         
+                    <span>transaction id {{item.id}}</span><br/>
+                    <span> transaction info {{item.HTrans}}</span><br/>        
                 {%endfor%}
                 
 
